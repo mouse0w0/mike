@@ -16,8 +16,8 @@ public class Target {
 
     public Target(Toml config) {
         this.name = config.getString("name");
-        this.sources = config.contains("sources") ? config.getList("sources") : Collections.singletonList("./");
-        this.headers = config.contains("headers") ? config.getList("headers") : Collections.singletonList("./");
+        this.sources = config.contains("sources") ? config.getList("sources") : Collections.singletonList(".");
+        this.headers = config.contains("headers") ? config.getList("headers") : Collections.singletonList(".");
         this.libraries = config.contains("libraries") ? config.getList("libraries") : Collections.emptyList();
         this.executable = config.getBoolean("executable", false);
         this.staticLibrary = config.getBoolean("staticLibrary", false);

@@ -57,11 +57,6 @@ public class Generator {
         writer.println();
         writer.println(".PHONY: clean");
         writer.println();
-
-        writer.println("$(OUTPUT)%.o: %");
-        writer.println("\t@mkdir -p $(dir $@)");
-        writer.println("\t$(CXX) $(CXXFLAGS) -o $@ -c $<");
-        writer.println();
     }
 
     private static void generateChildren(Project project, PrintWriter writer) {
@@ -71,6 +66,7 @@ public class Generator {
     }
 
     private static void generateTargets(Project project, PrintWriter writer) {
+        Path root = project.getRoot();
         for (Target target : project.getTargets()) {
             String name = target.getName();
             String uppercaseName = name.toUpperCase();
@@ -78,12 +74,16 @@ public class Generator {
             writer.println("# TARGET " + uppercaseName);
             writer.println("# --------------------------------------------------------------------------- ");
 
+            String varOutput = uppercaseName + "_OUTPUT";
+            writer.println(varOutput + " = $(OUTPUT)/" + name);
+
             String varSources = uppercaseName + "_SOURCES";
             for (String source : target.getSources()) {
-                if (source.isEmpty() || source.equals("./")) {
+                if (isCurrentPath(source)) {
                     writer.println(varSources + " += ${wildcard *.c} ${wildcard *.cc} ${wildcard *.cpp} ");
-                } else if (source.endsWith("/")) {
-                    writer.println(varSources + " += ${wildcard " + source + "*.c} ${wildcard " + source + "*.cc} ${wildcard " + source + "*.cpp} ");
+                } else if (Files.isDirectory(root.resolve(source))) {
+                    if (source.endsWith("/")) source = source.substring(0, source.length() - 1);
+                    writer.println(varSources + " += ${wildcard " + source + "/*.c} ${wildcard " + source + "/*.cc} ${wildcard " + source + "/*.cpp} ");
                 } else {
                     writer.println(varSources + " += " + source);
                 }
@@ -91,9 +91,10 @@ public class Generator {
 
             String varHeaders = uppercaseName + "_HEADERS";
             for (String header : target.getHeaders()) {
-                if (header.isEmpty() || header.equals("./")) {
+                if (isCurrentPath(header)) {
                     writer.println(varHeaders + " += ${wildcard *.h} ${wildcard *.hpp}");
-                } else if (header.endsWith("/")) {
+                } else if (Files.isDirectory(root.resolve(header))) {
+                    if (header.endsWith("/")) header = header.substring(0, header.length() - 1);
                     writer.println(varHeaders + " += ${wildcard " + header + "*.h} ${wildcard " + header + "*.hpp}");
                 } else {
                     writer.println(varHeaders + " += " + header);
@@ -101,7 +102,7 @@ public class Generator {
             }
 
             String varObjects = uppercaseName + "_OBJECTS";
-            writer.println(varObjects + " =  ${patsubst %, $(OUTPUT)%.o, $(" + varSources + ")}");
+            writer.println(varObjects + " =  ${patsubst %, $(" + varOutput + ")/%.o, $(" + varSources + ")}");
 
             String varExecutable = uppercaseName + "_EXECUTABLE";
             String varStaticLibrary = uppercaseName + "_STATIC_LIB";
@@ -115,21 +116,21 @@ public class Generator {
                 writer.println();
                 writer.println(varExecutable + " = " + name);
                 writer.println(taskGenExecutable + ": $(" + varObjects + ")");
-                writer.println("\t$(CXX) $(LDFLAGS) -o $(" + varExecutable + ") $(" + varObjects + ")");
+                writer.println("\t$(CXX) $(LDFLAGS) -o $@ $(" + varObjects + ")");
             }
 
             if (target.isStaticLibrary()) {
                 writer.println();
                 writer.println(varStaticLibrary + " = " + name + ".a");
                 writer.println(taskGenStaticLibrary + ": $(" + varObjects + ")");
-                writer.println("\t$(AR) $(ARFLAGS) $(" + varStaticLibrary + ")$(" + varObjects + ")");
+                writer.println("\t$(AR) $(ARFLAGS) $@ $(" + varObjects + ")");
             }
 
             if (target.isSharedLibrary()) {
                 writer.println();
                 writer.println(varSharedLibrary + " = " + name + ".so");
                 writer.println(taskGenSharedLibrary + ": $(" + varObjects + ")");
-                writer.println("\t$(CXX) $(LDFLAGS) -o $(" + varSharedLibrary + ") -shared $(" + varObjects + ")");
+                writer.println("\t$(CXX) $(LDFLAGS) -o $@ -shared $(" + varObjects + ")");
             }
 
             String taskAll = name + "/all";
@@ -150,6 +151,16 @@ public class Generator {
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
             writer.println();
             writer.println(".PHONY: " + taskClean);
+
+            writer.println();
+            writer.println("$(" + varOutput + ")/%.o: %");
+            writer.println("\t@mkdir -p $(dir $@)");
+            writer.println("\t$(CXX) $(CXXFLAGS) -o $@ -c $<");
+            writer.println();
         }
+    }
+
+    private static boolean isCurrentPath(String path) {
+        return path.isEmpty() || path.equals(".") || path.equals("./");
     }
 }

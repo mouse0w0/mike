@@ -82,7 +82,7 @@ public class Project {
         this.name = config.getString("name", root.getFileName().toString());
         parseChildren(config.getList("children"));
         parseTargets(config.getTables("targets"));
-        this.output = config.getString("output", "./build/");
+        this.output = config.getString("output", "./build");
         this.cxx = config.getString("cxx", "g++");
         this.cxxflags = config.getString("cxxflags", "-Wall");
         this.ldflags = config.getString("ldflags", "");
