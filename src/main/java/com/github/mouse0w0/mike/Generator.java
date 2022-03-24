@@ -50,6 +50,14 @@ public class Generator {
         writer.println(".PHONY: all");
         writer.println();
 
+        writer.print("depend:");
+        for (Target target : project.getTargets()) {
+            writer.print(" " + target.getName() + "/depend");
+        }
+        writer.println();
+        writer.println(".PHONY: depend");
+        writer.println();
+
         writer.print("clean:");
         for (Target target : project.getTargets()) {
             writer.print(" " + target.getName() + "/clean");
@@ -80,10 +88,10 @@ public class Generator {
             String varSources = uppercaseName + "_SOURCES";
             for (String source : target.getSources()) {
                 if (isCurrentPath(source)) {
-                    writer.println(varSources + " += ${wildcard *.c} ${wildcard *.cc} ${wildcard *.cpp} ");
+                    writer.println(varSources + " += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.cpp) ");
                 } else if (Files.isDirectory(root.resolve(source))) {
                     if (source.endsWith("/")) source = source.substring(0, source.length() - 1);
-                    writer.println(varSources + " += ${wildcard " + source + "/*.c} ${wildcard " + source + "/*.cc} ${wildcard " + source + "/*.cpp} ");
+                    writer.println(varSources + " += $(wildcard " + source + "/*.c) $(wildcard " + source + "/*.cc) $(wildcard " + source + "/*.cpp) ");
                 } else {
                     writer.println(varSources + " += " + source);
                 }
@@ -92,17 +100,21 @@ public class Generator {
             String varHeaders = uppercaseName + "_HEADERS";
             for (String header : target.getHeaders()) {
                 if (isCurrentPath(header)) {
-                    writer.println(varHeaders + " += ${wildcard *.h} ${wildcard *.hpp}");
+                    writer.println(varHeaders + " += $(wildcard *.h) $(wildcard *.hpp)");
                 } else if (Files.isDirectory(root.resolve(header))) {
                     if (header.endsWith("/")) header = header.substring(0, header.length() - 1);
-                    writer.println(varHeaders + " += ${wildcard " + header + "*.h} ${wildcard " + header + "*.hpp}");
+                    writer.println(varHeaders + " += $(wildcard " + header + "*.h) $(wildcard " + header + "*.hpp)");
                 } else {
                     writer.println(varHeaders + " += " + header);
                 }
             }
 
             String varObjects = uppercaseName + "_OBJECTS";
-            writer.println(varObjects + " =  ${patsubst %, $(" + varOutput + ")/%.o, $(" + varSources + ")}");
+            writer.println(varObjects + " =  $(patsubst %, $(" + varOutput + ")/%.o, $(" + varSources + "))");
+
+            String varDepend = uppercaseName + "_DEPEND";
+            writer.println(varDepend + " = $(" + varOutput + ")/" + name + ".d");
+            writer.println("-include $(" + varDepend + ")");
 
             String varExecutable = uppercaseName + "_EXECUTABLE";
             String varStaticLibrary = uppercaseName + "_STATIC_LIB";
@@ -142,10 +154,18 @@ public class Generator {
             writer.println();
             writer.println(".PHONY: " + taskAll);
 
+            String taskDepend = name + "/depend";
+            writer.println();
+            writer.println(taskDepend + ":");
+            writer.println("\t@mkdir -p $(dir $(DEMO_DEPEND))");
+            writer.println("\t$(CXX) -MM $(DEMO_SOURCES) > $(DEMO_DEPEND)");
+            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varOutput + ")/\\2.o: \\2|g\" $(DEMO_DEPEND)");
+            writer.println(".PHONY: " + taskDepend);
+
             String taskClean = name + "/clean";
             writer.println();
             writer.println(taskClean + ":");
-            writer.print("\trm -f $(" + varObjects + ")");
+            writer.print("\trm -f $(" + varObjects + ") $(" + varDepend + ")");
             if (target.isExecutable()) writer.print(" $(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.print(" $(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
