@@ -109,20 +109,20 @@ public class Generator {
                 } else if (Files.isDirectory(root.resolve(source))) {
                     if (source.endsWith("/")) source = source.substring(0, source.length() - 1);
                     writer.println(varSources + " += $(wildcard " + source + "/*.c) $(wildcard " + source + "/*.cc) $(wildcard " + source + "/*.cpp)");
-                } else {
+                } else if (isSourceFile(source)) {
                     writer.println(varSources + " += " + source);
                 }
             }
 
             String varHeaders = uppercaseName + "_HEADERS";
-            for (String header : target.getHeaders()) {
-                if (isCurrentPath(header)) {
+            for (String source : target.getSources()) {
+                if (isCurrentPath(source)) {
                     writer.println(varHeaders + " += $(wildcard *.h) $(wildcard *.hpp)");
-                } else if (Files.isDirectory(root.resolve(header))) {
-                    if (header.endsWith("/")) header = header.substring(0, header.length() - 1);
-                    writer.println(varHeaders + " += $(wildcard " + header + "*.h) $(wildcard " + header + "*.hpp)");
-                } else {
-                    writer.println(varHeaders + " += " + header);
+                } else if (Files.isDirectory(root.resolve(source))) {
+                    if (source.endsWith("/")) source = source.substring(0, source.length() - 1);
+                    writer.println(varHeaders + " += $(wildcard " + source + "*.h) $(wildcard " + source + "*.hpp)");
+                } else if (isHeaderFile(source)) {
+                    writer.println(varHeaders + " += " + source);
                 }
             }
 
@@ -217,5 +217,13 @@ public class Generator {
 
     private static boolean isCurrentPath(String path) {
         return path.isEmpty() || path.equals(".") || path.equals("./");
+    }
+
+    private static boolean isSourceFile(String file) {
+        return file.endsWith(".c") || file.endsWith(".cc") || file.endsWith(".cpp");
+    }
+
+    private static boolean isHeaderFile(String file) {
+        return file.endsWith(".h") || file.endsWith(".hpp");
     }
 }

@@ -8,7 +8,6 @@ import java.util.List;
 public class Target {
     private String name;
     private List<String> sources;
-    private List<String> headers;
     private List<String> libraries;
     private boolean executable;
     private boolean staticLibrary;
@@ -17,7 +16,6 @@ public class Target {
     public Target(Toml config) {
         this.name = config.getString("name");
         this.sources = config.contains("sources") ? config.getList("sources") : Collections.singletonList(".");
-        this.headers = config.contains("headers") ? config.getList("headers") : Collections.singletonList(".");
         this.libraries = config.contains("libraries") ? config.getList("libraries") : Collections.emptyList();
         this.executable = config.getBoolean("executable", false);
         this.staticLibrary = config.getBoolean("staticLibrary", false);
@@ -31,10 +29,6 @@ public class Target {
 
     public List<String> getSources() {
         return sources;
-    }
-
-    public List<String> getHeaders() {
-        return headers;
     }
 
     public List<String> getLibraries() {
