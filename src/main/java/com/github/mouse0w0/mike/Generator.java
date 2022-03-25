@@ -30,7 +30,7 @@ public class Generator {
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# OPTIONS");
         writer.println("# --------------------------------------------------------------------------- ");
-        writer.println("OUTPUT = " + project.getOutput());
+        writer.println("BUILD_DIR = " + project.getBuildDir());
         writer.println("CXX = " + project.getCxx());
         writer.println("CXXFLAGS = " + project.getCxxflags());
         writer.println("LDFLAGS = " + project.getLdflags());
@@ -82,8 +82,8 @@ public class Generator {
             writer.println("# TARGET " + uppercaseName);
             writer.println("# --------------------------------------------------------------------------- ");
 
-            String varOutput = uppercaseName + "_OUTPUT";
-            writer.println(varOutput + " = $(OUTPUT)/" + name);
+            String varBuildDir = uppercaseName + "_BUILD_DIR";
+            writer.println(varBuildDir + " = $(BUILD_DIR)/" + name);
 
             String varSources = uppercaseName + "_SOURCES";
             for (String source : target.getSources()) {
@@ -110,10 +110,10 @@ public class Generator {
             }
 
             String varObjects = uppercaseName + "_OBJECTS";
-            writer.println(varObjects + " =  $(patsubst %, $(" + varOutput + ")/%.o, $(" + varSources + "))");
+            writer.println(varObjects + " =  $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
 
             String varDepend = uppercaseName + "_DEPEND";
-            writer.println(varDepend + " = $(" + varOutput + ")/" + name + ".d");
+            writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
             writer.println("-include $(" + varDepend + ")");
 
             String varExecutable = uppercaseName + "_EXECUTABLE";
@@ -159,7 +159,7 @@ public class Generator {
             writer.println(taskDepend + ":");
             writer.println("\t@mkdir -p $(dir $(DEMO_DEPEND))");
             writer.println("\t$(CXX) -MM $(DEMO_SOURCES) > $(DEMO_DEPEND)");
-            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varOutput + ")/\\2.o: \\2|g\" $(DEMO_DEPEND)");
+            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(DEMO_DEPEND)");
             writer.println(".PHONY: " + taskDepend);
 
             String taskClean = name + "/clean";
@@ -173,7 +173,7 @@ public class Generator {
             writer.println(".PHONY: " + taskClean);
 
             writer.println();
-            writer.println("$(" + varOutput + ")/%.o: %");
+            writer.println("$(" + varBuildDir + ")/%.o: %");
             writer.println("\t@mkdir -p $(dir $@)");
             writer.println("\t$(CXX) $(CXXFLAGS) -o $@ -c $<");
             writer.println();

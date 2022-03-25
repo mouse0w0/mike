@@ -17,7 +17,7 @@ public class Project {
     private String name;
     private List<Project> children;
     private List<Target> targets;
-    private String output;
+    private String buildDir;
     // Options
     private String cxx;
     private String cxxflags;
@@ -46,8 +46,8 @@ public class Project {
         return targets;
     }
 
-    public String getOutput() {
-        return output;
+    public String getBuildDir() {
+        return buildDir;
     }
 
     public String getCxx() {
@@ -82,12 +82,12 @@ public class Project {
         this.name = config.getString("name", root.getFileName().toString());
         parseChildren(config.getList("children"));
         parseTargets(config.getTables("targets"));
-        this.output = config.getString("output", "./build");
-        this.cxx = config.getString("cxx", "g++");
-        this.cxxflags = config.getString("cxxflags", "-Wall");
-        this.ldflags = config.getString("ldflags", "");
-        this.ar = config.getString("ar", "ar");
-        this.arflags = config.getString("arflags", "rc");
+        this.buildDir = config.getString("BUILD_DIR", "./build");
+        this.cxx = config.getString("CXX", "g++");
+        this.cxxflags = config.getString("CXXFLAGS", "-Wall");
+        this.ldflags = config.getString("LDFLAGS", "");
+        this.ar = config.getString("AR", "ar");
+        this.arflags = config.getString("ARFLAGS", "rc");
     }
 
     private void parseChildren(List<String> config) {
