@@ -18,6 +18,7 @@ public class Project {
     private List<Project> children;
     private List<Target> targets;
     private String buildDir;
+    private String installDir;
     // Options
     private String cxx;
     private String cxxflags;
@@ -48,6 +49,10 @@ public class Project {
 
     public String getBuildDir() {
         return buildDir;
+    }
+
+    public String getInstallDir() {
+        return installDir;
     }
 
     public String getCxx() {
@@ -83,6 +88,7 @@ public class Project {
         parseChildren(config.getList("children"));
         parseTargets(config.getTables("targets"));
         this.buildDir = config.getString("BUILD_DIR", "./build");
+        this.installDir = config.getString("INSTALL_DIR", "/usr/local");
         this.cxx = config.getString("CXX", "g++");
         this.cxxflags = config.getString("CXXFLAGS", "-Wall");
         this.ldflags = config.getString("LDFLAGS", "");

@@ -31,6 +31,7 @@ public class Generator {
         writer.println("# OPTIONS");
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("BUILD_DIR = " + project.getBuildDir());
+        writer.println("INSTALL_DIR = " + project.getInstallDir());
         writer.println("CXX = " + project.getCxx());
         writer.println("CXXFLAGS = " + project.getCxxflags());
         writer.println("LDFLAGS = " + project.getLdflags());
@@ -56,6 +57,22 @@ public class Generator {
         }
         writer.println();
         writer.println(".PHONY: depend");
+        writer.println();
+
+        writer.print("install:");
+        for (Target target : project.getTargets()) {
+            writer.print(" " + target.getName() + "/install");
+        }
+        writer.println();
+        writer.println(".PHONY: install");
+        writer.println();
+
+        writer.print("uninstall:");
+        for (Target target : project.getTargets()) {
+            writer.print(" " + target.getName() + "/uninstall");
+        }
+        writer.println();
+        writer.println(".PHONY: uninstall");
         writer.println();
 
         writer.print("clean:");
@@ -110,7 +127,7 @@ public class Generator {
             }
 
             String varObjects = uppercaseName + "_OBJECTS";
-            writer.println(varObjects + " =  $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
+            writer.println(varObjects + " = $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
 
             String varDepend = uppercaseName + "_DEPEND";
             writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
@@ -171,6 +188,24 @@ public class Generator {
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
             writer.println();
             writer.println(".PHONY: " + taskClean);
+
+            String taskInstall = name + "/install";
+            writer.println();
+            writer.println(taskInstall + ": " + taskAll);
+            writer.println("\tcp $(" + varHeaders + ") $(INSTALL_DIR)/include");
+            if (target.isExecutable()) writer.println("\tcp $(" + varExecutable + ") $(INSTALL_DIR)/bin");
+            if (target.isStaticLibrary()) writer.println("\tcp $(" + varStaticLibrary + ") $(INSTALL_DIR)/lib");
+            if (target.isSharedLibrary()) writer.println("\tcp $(" + varSharedLibrary + ") $(INSTALL_DIR)/lib");
+            writer.println(".PHONY: " + taskInstall);
+
+            String taskUninstall = name + "/uninstall";
+            writer.println();
+            writer.println(taskUninstall + ":");
+            writer.println("\trm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
+            if (target.isExecutable()) writer.println("\trm -f $(INSTALL_DIR)/bin/$(" + varExecutable + ")");
+            if (target.isStaticLibrary()) writer.println("\trm -f $(INSTALL_DIR)/lib/$(" + varStaticLibrary + ")");
+            if (target.isSharedLibrary()) writer.println("\trm -f $(INSTALL_DIR)/lib/$(" + varSharedLibrary + ")");
+            writer.println(".PHONY: " + taskUninstall);
 
             writer.println();
             writer.println("$(" + varBuildDir + ")/%.o: %");
