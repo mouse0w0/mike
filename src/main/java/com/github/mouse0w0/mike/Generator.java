@@ -129,6 +129,16 @@ public class Generator {
             String varObjects = uppercaseName + "_OBJECTS";
             writer.println(varObjects + " = $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
 
+            String varIncludes = uppercaseName + "_INCLUDES";
+            writer.print(varIncludes + " = ");
+            for (String include : target.getIncludes()) {
+                writer.print(" " + include);
+            }
+            writer.println();
+
+            String varIncludeFlags = uppercaseName + "_INCLUDE_FLAGS";
+            writer.println(varIncludeFlags + " = $(addprefix -I,$(" + varIncludes + "))");
+
             String varDepend = uppercaseName + "_DEPEND";
             writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
             writer.println("-include $(" + varDepend + ")");
@@ -210,7 +220,7 @@ public class Generator {
             writer.println();
             writer.println("$(" + varBuildDir + ")/%.o: %");
             writer.println("\t@mkdir -p $(dir $@)");
-            writer.println("\t$(CXX) $(CXXFLAGS) -o $@ -c $<");
+            writer.println("\t$(CXX) $(CXXFLAGS) $(" + varIncludeFlags + ") -o $@ -c $<");
             writer.println();
         }
     }
