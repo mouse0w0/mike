@@ -157,9 +157,9 @@ public class Generator {
             String taskDepend = name + "/depend";
             writer.println();
             writer.println(taskDepend + ":");
-            writer.println("\t@mkdir -p $(dir $(DEMO_DEPEND))");
-            writer.println("\t$(CXX) -MM $(DEMO_SOURCES) > $(DEMO_DEPEND)");
-            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(DEMO_DEPEND)");
+            writer.println("\t@mkdir -p $(dir $(" + varDepend + "))");
+            writer.println("\t$(CXX) -MM $(" + varSources + ") > $(" + varDepend + ")");
+            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(" + varDepend + ")");
             writer.println(".PHONY: " + taskDepend);
 
             String taskClean = name + "/clean";
