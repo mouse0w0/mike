@@ -105,10 +105,10 @@ public class Generator {
             String varSources = uppercaseName + "_SOURCES";
             for (String source : target.getSources()) {
                 if (isCurrentPath(source)) {
-                    writer.println(varSources + " += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.cpp) ");
+                    writer.println(varSources + " += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.cpp)");
                 } else if (Files.isDirectory(root.resolve(source))) {
                     if (source.endsWith("/")) source = source.substring(0, source.length() - 1);
-                    writer.println(varSources + " += $(wildcard " + source + "/*.c) $(wildcard " + source + "/*.cc) $(wildcard " + source + "/*.cpp) ");
+                    writer.println(varSources + " += $(wildcard " + source + "/*.c) $(wildcard " + source + "/*.cc) $(wildcard " + source + "/*.cpp)");
                 } else {
                     writer.println(varSources + " += " + source);
                 }
