@@ -6,7 +6,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 
 public class Generator {
     public static final String MAKEFILE = "Makefile";
@@ -17,7 +16,8 @@ public class Generator {
             Path makefile = project.getRoot().resolve(MAKEFILE);
             Files.deleteIfExists(makefile);
             writer = new PrintWriter(Files.newBufferedWriter(makefile, StandardOpenOption.CREATE));
-            generateProject(project, writer);
+            generateProjectOptions(project, writer);
+            generateProjectTasks(project, writer);
             generateChildren(project, writer);
             generateTargets(project, writer);
         } catch (IOException e) {
@@ -29,7 +29,7 @@ public class Generator {
         }
     }
 
-    private static void generateProject(Project project, PrintWriter writer) {
+    private static void generateProjectOptions(Project project, PrintWriter writer) {
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# OPTIONS");
         writer.println("# --------------------------------------------------------------------------- ");
@@ -42,19 +42,21 @@ public class Generator {
         writer.println("AR = " + project.getAr());
         writer.println("ARFLAGS = " + project.getArflags());
         writer.println();
+    }
 
+    private static void generateProjectTasks(Project project, PrintWriter writer) {
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# TASKS");
         writer.println("# --------------------------------------------------------------------------- ");
 
-        generateRootTask(project, writer, "all");
-        generateRootTask(project, writer, "depend");
-        generateRootTask(project, writer, "clean");
-        generateRootTask(project, writer, "install");
-        generateRootTask(project, writer, "uninstall");
+        generateProjectTask(project, writer, "all");
+        generateProjectTask(project, writer, "depend");
+        generateProjectTask(project, writer, "clean");
+        generateProjectTask(project, writer, "install");
+        generateProjectTask(project, writer, "uninstall");
     }
 
-    private static void generateRootTask(Project project, PrintWriter writer, String task) {
+    private static void generateProjectTask(Project project, PrintWriter writer, String task) {
         writer.println();
         writer.print(task + ":");
         for (Target target : project.getTargets()) {
