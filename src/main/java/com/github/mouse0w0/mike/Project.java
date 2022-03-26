@@ -12,6 +12,8 @@ import java.util.List;
 
 public class Project {
 
+    public static final String MIKEFILE = "mike.toml";
+
     private final Path root;
 
     private String name;
@@ -29,7 +31,7 @@ public class Project {
 
     public Project(Path root) {
         this.root = root;
-        parseProject(readConfig(root.resolve(Constants.MIKEFILE)));
+        parseProject(readConfig(root.resolve(MIKEFILE)));
     }
 
     public Path getRoot() {

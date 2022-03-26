@@ -6,12 +6,15 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 public class Generator {
+    public static final String MAKEFILE = "Makefile";
+
     public static void generate(Project project) {
         PrintWriter writer = null;
         try {
-            Path makefile = project.getRoot().resolve(Constants.MAKEFILE);
+            Path makefile = project.getRoot().resolve(MAKEFILE);
             Files.deleteIfExists(makefile);
             writer = new PrintWriter(Files.newBufferedWriter(makefile, StandardOpenOption.CREATE));
             generateProject(project, writer);
@@ -44,45 +47,21 @@ public class Generator {
         writer.println("# TASKS");
         writer.println("# --------------------------------------------------------------------------- ");
 
-        writer.print("all:");
-        for (Target target : project.getTargets()) {
-            writer.print(" " + target.getName() + "/all");
-        }
-        writer.println();
-        writer.println(".PHONY: all");
-        writer.println();
+        generateRootTask(project, writer, "all");
+        generateRootTask(project, writer, "depend");
+        generateRootTask(project, writer, "clean");
+        generateRootTask(project, writer, "install");
+        generateRootTask(project, writer, "uninstall");
+    }
 
-        writer.print("depend:");
+    private static void generateRootTask(Project project, PrintWriter writer, String task) {
+        writer.println();
+        writer.print(task + ":");
         for (Target target : project.getTargets()) {
-            writer.print(" " + target.getName() + "/depend");
+            writer.print(" " + target.getName() + "/" + task);
         }
         writer.println();
-        writer.println(".PHONY: depend");
-        writer.println();
-
-        writer.print("install:");
-        for (Target target : project.getTargets()) {
-            writer.print(" " + target.getName() + "/install");
-        }
-        writer.println();
-        writer.println(".PHONY: install");
-        writer.println();
-
-        writer.print("uninstall:");
-        for (Target target : project.getTargets()) {
-            writer.print(" " + target.getName() + "/uninstall");
-        }
-        writer.println();
-        writer.println(".PHONY: uninstall");
-        writer.println();
-
-        writer.print("clean:");
-        for (Target target : project.getTargets()) {
-            writer.print(" " + target.getName() + "/clean");
-        }
-        writer.println();
-        writer.println(".PHONY: clean");
-        writer.println();
+        writer.println(".PHONY: " + task);
     }
 
     private static void generateChildren(Project project, PrintWriter writer) {
@@ -224,6 +203,10 @@ public class Generator {
             writer.println("\t$(CXX) $(CXXFLAGS) $(" + varIncludeFlags + ") -o $@ -c $<");
             writer.println();
         }
+    }
+
+    private static void generateChildrenTargets(Project project, PrintWriter writer) {
+
     }
 
     private static boolean isCurrentPath(String path) {
