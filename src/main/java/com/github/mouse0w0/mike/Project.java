@@ -22,6 +22,7 @@ public class Project {
     // Options
     private String cxx;
     private String cxxflags;
+    private String ld;
     private String ldflags;
     private String ar;
     private String arflags;
@@ -63,6 +64,10 @@ public class Project {
         return cxxflags;
     }
 
+    public String getLd() {
+        return ld;
+    }
+
     public String getLdflags() {
         return ldflags;
     }
@@ -91,6 +96,7 @@ public class Project {
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
         this.cxx = config.getString("CXX", "g++");
         this.cxxflags = config.getString("CXXFLAGS", "-Wall");
+        this.ld = config.getString("LD", "g++");
         this.ldflags = config.getString("LDFLAGS", "");
         this.ar = config.getString("AR", "ar");
         this.arflags = config.getString("ARFLAGS", "rc");

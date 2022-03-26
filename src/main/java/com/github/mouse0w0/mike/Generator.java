@@ -34,6 +34,7 @@ public class Generator {
         writer.println("INSTALL_DIR = " + project.getInstallDir());
         writer.println("CXX = " + project.getCxx());
         writer.println("CXXFLAGS = " + project.getCxxflags());
+        writer.println("LD = " + project.getLd());
         writer.println("LDFLAGS = " + project.getLdflags());
         writer.println("AR = " + project.getAr());
         writer.println("ARFLAGS = " + project.getArflags());
@@ -155,7 +156,7 @@ public class Generator {
                 writer.println();
                 writer.println(varExecutable + " = " + name);
                 writer.println(taskGenExecutable + ": $(" + varObjects + ")");
-                writer.println("\t$(CXX) $(LDFLAGS) -o $@ $(" + varObjects + ")");
+                writer.println("\t$(LD) $(LDFLAGS) -o $@ $(" + varObjects + ")");
             }
 
             if (target.isStaticLibrary()) {
