@@ -193,10 +193,11 @@ public class Generator {
             String taskUninstall = name + "/uninstall";
             writer.println();
             writer.println(taskUninstall + ":");
-            writer.println("\trm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
-            if (target.isExecutable()) writer.println("\trm -f $(INSTALL_DIR)/bin/$(" + varExecutable + ")");
-            if (target.isStaticLibrary()) writer.println("\trm -f $(INSTALL_DIR)/lib/$(" + varStaticLibrary + ")");
-            if (target.isSharedLibrary()) writer.println("\trm -f $(INSTALL_DIR)/lib/$(" + varSharedLibrary + ")");
+            writer.print("\trm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
+            if (target.isExecutable()) writer.print(" $(INSTALL_DIR)/bin/$(" + varExecutable + ")");
+            if (target.isStaticLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varStaticLibrary + ")");
+            if (target.isSharedLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varSharedLibrary + ")");
+            writer.println();
             writer.println(".PHONY: " + taskUninstall);
 
             writer.println();
