@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Project {
 
@@ -18,6 +19,7 @@ public class Project {
 
     private String name;
     private List<Project> children;
+    private List<Script> scripts;
     private List<Target> targets;
 
     // Options
@@ -49,6 +51,10 @@ public class Project {
 
     public List<Target> getTargets() {
         return targets;
+    }
+
+    public List<Script> getScripts() {
+        return scripts;
     }
 
     public String getBuildDir() {
@@ -94,6 +100,7 @@ public class Project {
     private void parseProject(Toml config) {
         this.name = config.getString("name", root.getFileName().toString());
         this.children = parseChildren(config.getList("children"));
+        this.scripts = parseScripts(config.getTable("scripts"));
         this.targets = parseTargets(config.getTables("targets"));
         this.buildDir = config.getString("BUILD_DIR", "./build");
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
@@ -113,6 +120,16 @@ public class Project {
             }
         }
         return children;
+    }
+
+    private List<Script> parseScripts(Toml config) {
+        List<Script> scripts = new ArrayList<>();
+        if (config != null) {
+            for (Map.Entry<String, Object> entry : config.entrySet()) {
+                scripts.add(new Script(entry.getKey(), entry.getValue().toString().split("\r\n|\n|\r")));
+            }
+        }
+        return scripts;
     }
 
     private List<Target> parseTargets(List<Toml> config) {

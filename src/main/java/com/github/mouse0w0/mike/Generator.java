@@ -19,6 +19,7 @@ public class Generator {
             generateProjectOptions(project, writer);
             generateProjectTasks(project, writer);
             generateChildren(project, writer);
+            generateScripts(project, writer);
             generateTargets(project, writer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -57,18 +58,35 @@ public class Generator {
     }
 
     private static void generateProjectTask(Project project, PrintWriter writer, String task) {
-        writer.println();
         writer.print(task + ":");
         for (Target target : project.getTargets()) {
             writer.print(" " + target.getName() + "/" + task);
         }
         writer.println();
         writer.println(".PHONY: " + task);
+        writer.println();
     }
 
     private static void generateChildren(Project project, PrintWriter writer) {
         for (Project child : project.getChildren()) {
             generate(child);
+        }
+    }
+
+    private static void generateScripts(Project project, PrintWriter writer) {
+        if (project.getScripts().isEmpty()) return;
+        writer.println("# --------------------------------------------------------------------------- ");
+        writer.println("# SCRIPTS");
+        writer.println("# --------------------------------------------------------------------------- ");
+        for (Script script : project.getScripts()) {
+            String task = "run/" + script.getName();
+            writer.println(task + ":");
+            for (String command : script.getCommands()) {
+                writer.print("\t");
+                writer.println(command.trim());
+            }
+            writer.println(".PHONY: " + task);
+            writer.println();
         }
     }
 
