@@ -19,9 +19,10 @@ public class Project {
     private String name;
     private List<Project> children;
     private List<Target> targets;
+
+    // Options
     private String buildDir;
     private String installDir;
-    // Options
     private String cxx;
     private String cxxflags;
     private String ld;
