@@ -93,8 +93,8 @@ public class Project {
 
     private void parseProject(Toml config) {
         this.name = config.getString("name", root.getFileName().toString());
-        parseChildren(config.getList("children"));
-        parseTargets(config.getTables("targets"));
+        this.children = parseChildren(config.getList("children"));
+        this.targets = parseTargets(config.getTables("targets"));
         this.buildDir = config.getString("BUILD_DIR", "./build");
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
         this.cxx = config.getString("CXX", "g++");
@@ -105,19 +105,23 @@ public class Project {
         this.arflags = config.getString("ARFLAGS", "rc");
     }
 
-    private void parseChildren(List<String> config) {
-        children = new ArrayList<>();
-        if (config == null) return;
-        for (String c : config) {
-            children.add(new Project(root.resolve(c)));
+    private List<Project> parseChildren(List<String> config) {
+        List<Project> children = new ArrayList<>();
+        if (config != null) {
+            for (String c : config) {
+                children.add(new Project(root.resolve(c)));
+            }
         }
+        return children;
     }
 
-    private void parseTargets(List<Toml> config) {
-        targets = new ArrayList<>();
-        if (config == null) return;
-        for (Toml c : config) {
-            targets.add(new Target(c));
+    private List<Target> parseTargets(List<Toml> config) {
+        List<Target> targets = new ArrayList<>();
+        if (config != null) {
+            for (Toml c : config) {
+                targets.add(new Target(c));
+            }
         }
+        return targets;
     }
 }
