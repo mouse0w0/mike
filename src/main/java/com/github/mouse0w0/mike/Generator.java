@@ -21,6 +21,7 @@ public class Generator {
             generateChildren(project, writer);
             generateScripts(project, writer);
             generateTargets(project, writer);
+            generateTests(project, writer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -226,8 +227,62 @@ public class Generator {
         }
     }
 
+    private static void generateTests(Project project, PrintWriter writer) {
+        if (project.getTests().isEmpty()) return;
+        writer.println("# --------------------------------------------------------------------------- ");
+        writer.println("# TESTS");
+        writer.println("# --------------------------------------------------------------------------- ");
+        String testTask = "test";
+        writer.println(testTask + ": TEST_TOTAL :=" + project.getTests().size());
+        writer.println(testTask + ":");
+        writer.println("\t@echo Test project $(shell pwd)");
+        int testCurrent = 1;
+        for (Test test : project.getTests()) {
+            String task = "test/" + test.getName();
+            writer.println("\t@$(MAKE) --no-print-directory " + task + " TEST_TOTAL=$(TEST_TOTAL) TEST_CURRENT=" + testCurrent++);
+        }
+        writer.println("\t@echo Test project finished");
+        writer.println(".PHONY: " + testTask);
+        writer.println();
+
+        writer.println("TEST_TOTAL ?= 1");
+        writer.println("TEST_CURRENT ?= 1");
+        writer.println();
+
+        for (Test test : project.getTests()) {
+            String task = "test/" + test.getName();
+            writer.println(task + ": TEST_NAME := " + test.getName());
+            writer.println(task + ": TEST_TARGET := " + test.getTarget());
+            if (isNotEmpty(test.getArgs())) {
+                writer.println(task + ": TEST_ARGS := " + test.getArgs());
+            }
+            if (isNotEmpty(test.getInput())) {
+                writer.println(task + ": TEST_INPUT := " + test.getInput());
+            }
+            writer.println(task + ": TEST_EXPECT := " + test.getExpect());
+            writer.println(task + ": " + test.getTarget());
+            writer.println("\t@echo \"\\tStart $(TEST_CURRENT)\\t: $(TEST_NAME)\"");
+            writer.print("\t$(eval TEST_OUTPUT:=$(shell ./$(TEST_TARGET)");
+            if (isNotEmpty(test.getArgs())) {
+                writer.print(" $(TEST_ARGS)");
+            }
+            writer.println("))");
+            writer.println("\t@echo \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(findstring $(TEST_OUTPUT),$(TEST_EXPECT)),Passed,Failed)\"");
+            writer.println(".PHONY: " + task);
+            writer.println();
+        }
+    }
+
     private static void generateChildrenTargets(Project project, PrintWriter writer) {
 
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
+
+    private static boolean isNotEmpty(String s) {
+        return s != null && !s.isEmpty();
     }
 
     private static boolean isCurrentPath(String path) {

@@ -21,6 +21,7 @@ public class Project {
     private List<Project> children;
     private List<Script> scripts;
     private List<Target> targets;
+    private List<Test> tests;
 
     // Options
     private String buildDir;
@@ -55,6 +56,10 @@ public class Project {
 
     public List<Script> getScripts() {
         return scripts;
+    }
+
+    public List<Test> getTests() {
+        return tests;
     }
 
     public String getBuildDir() {
@@ -102,6 +107,7 @@ public class Project {
         this.children = parseChildren(config.getList("children"));
         this.scripts = parseScripts(config.getTable("scripts"));
         this.targets = parseTargets(config.getTables("targets"));
+        this.tests = parseTests(config.getTable("tests"));
         this.buildDir = config.getString("BUILD_DIR", "./build");
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
         this.cxx = config.getString("CXX", "g++");
@@ -140,5 +146,21 @@ public class Project {
             }
         }
         return targets;
+    }
+
+    private List<Test> parseTests(Toml config) {
+        List<Test> tests = new ArrayList<>();
+        if (config != null) {
+            for (Map.Entry<String, Object> entry : config.entrySet()) {
+                String name = entry.getKey();
+                Toml table = config.getTable(name);
+                String target = table.getString("target");
+                String args = table.getString("args");
+                String input = table.getString("input");
+                String expect = table.getString("expect");
+                tests.add(new Test(name, target, args, input, expect));
+            }
+        }
+        return tests;
     }
 }
