@@ -16,6 +16,7 @@ public class Generator {
             Path makefile = project.getRoot().resolve(MAKEFILE);
             Files.deleteIfExists(makefile);
             writer = new PrintWriter(Files.newBufferedWriter(makefile, StandardOpenOption.CREATE));
+            writer.println("SHELL=/bin/bash");
             generateProjectOptions(project, writer);
             generateProjectTasks(project, writer);
             generateChildren(project, writer);
@@ -261,13 +262,16 @@ public class Generator {
             }
             writer.println(task + ": TEST_EXPECT := " + test.getExpect());
             writer.println(task + ": " + test.getTarget());
-            writer.println("\t@echo \"\\tStart $(TEST_CURRENT)\\t: $(TEST_NAME)\"");
-            writer.print("\t$(eval TEST_OUTPUT:=$(shell ./$(TEST_TARGET)");
+            writer.println("\t@echo -e \"\\tStart $(TEST_CURRENT)\\t: $(TEST_NAME)\"");
+            writer.print("\t$(eval TEST_OUTPUT:=$(bash ./$(TEST_TARGET)");
             if (isNotEmpty(test.getArgs())) {
                 writer.print(" $(TEST_ARGS)");
             }
+            if (isNotEmpty(test.getInput())) {
+                writer.print(" <<< " + test.getInput());
+            }
             writer.println("))");
-            writer.println("\t@echo \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(findstring $(TEST_OUTPUT),$(TEST_EXPECT)),Passed,Failed)\"");
+            writer.println("\t@echo -e \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(findstring $(TEST_OUTPUT),$(TEST_EXPECT)),Passed,Failed)\"");
             writer.println(".PHONY: " + task);
             writer.println();
         }
