@@ -234,7 +234,7 @@ public class Generator {
         writer.println("# TESTS");
         writer.println("# --------------------------------------------------------------------------- ");
         String testTask = "test";
-        writer.println(testTask + ": TEST_TOTAL :=" + project.getTests().size());
+        writer.println(testTask + ": TEST_TOTAL = " + project.getTests().size());
         writer.println(testTask + ":");
         writer.println("\t@echo Test project $(shell pwd)");
         int testCurrent = 1;
@@ -252,18 +252,18 @@ public class Generator {
 
         for (Test test : project.getTests()) {
             String task = "test/" + test.getName();
-            writer.println(task + ": TEST_NAME := " + test.getName());
-            writer.println(task + ": TEST_TARGET := " + test.getTarget());
+            writer.println(task + ": TEST_NAME = " + test.getName());
+            writer.println(task + ": TEST_TARGET = " + test.getTarget());
             if (isNotEmpty(test.getArgs())) {
-                writer.println(task + ": TEST_ARGS := " + test.getArgs());
+                writer.println(task + ": TEST_ARGS = " + test.getArgs());
             }
             if (isNotEmpty(test.getInput())) {
-                writer.println(task + ": TEST_INPUT := " + test.getInput());
+                writer.println(task + ": TEST_INPUT = " + test.getInput());
             }
-            writer.println(task + ": TEST_EXPECT := " + test.getExpect());
+            writer.println(task + ": TEST_EXPECT = " + test.getExpect());
             writer.println(task + ": " + test.getTarget());
             writer.println("\t@echo -e \"\\tStart $(TEST_CURRENT)\\t: $(TEST_NAME)\"");
-            writer.print("\t$(eval TEST_OUTPUT:=$(bash ./$(TEST_TARGET)");
+            writer.print("\t$(eval TEST_OUTPUT=$(shell ./$(TEST_TARGET)");
             if (isNotEmpty(test.getArgs())) {
                 writer.print(" $(TEST_ARGS)");
             }
@@ -271,7 +271,8 @@ public class Generator {
                 writer.print(" <<< " + test.getInput());
             }
             writer.println("))");
-            writer.println("\t@echo -e \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(findstring $(TEST_OUTPUT),$(TEST_EXPECT)),Passed,Failed)\"");
+            writer.println("\t$(eval TEST_RESULT=$(findstring $(TEST_OUTPUT),$(TEST_EXPECT)))");
+            writer.println("\t@echo -e \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(TEST_RESULT),Passed,Failed)\"");
             writer.println(".PHONY: " + task);
             writer.println();
         }
