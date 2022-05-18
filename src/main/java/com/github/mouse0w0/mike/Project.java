@@ -126,7 +126,7 @@ public class Project {
         List<Script> scripts = new ArrayList<>();
         if (config != null) {
             for (Map.Entry<String, Object> entry : config.entrySet()) {
-                scripts.add(new Script(entry.getKey(), entry.getValue().toString().split("\r\n|\n|\r")));
+                scripts.add(new Script(entry.getKey(), entry.getValue().toString().trim().split("(\\r\\n|\\n|\\r)\\s*")));
             }
         }
         return scripts;

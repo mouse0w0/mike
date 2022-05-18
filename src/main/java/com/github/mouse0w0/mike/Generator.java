@@ -83,7 +83,7 @@ public class Generator {
             writer.println(task + ":");
             for (String command : script.getCommands()) {
                 writer.print("\t");
-                writer.println(command.trim());
+                writer.println(command);
             }
             writer.println(".PHONY: " + task);
             writer.println();
