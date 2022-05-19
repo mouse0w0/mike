@@ -23,6 +23,7 @@ public class Generator {
             generateScripts(project, writer);
             generateTargets(project, writer);
             generateTests(project, writer);
+            generateHelp(project, writer);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -53,8 +54,8 @@ public class Generator {
         writer.println("# --------------------------------------------------------------------------- ");
 
         generateProjectTask(project, writer, "all");
-        generateProjectTask(project, writer, "depend");
         generateProjectTask(project, writer, "clean");
+        generateProjectTask(project, writer, "depend");
         generateProjectTask(project, writer, "install");
         generateProjectTask(project, writer, "uninstall");
     }
@@ -183,14 +184,6 @@ public class Generator {
             writer.println();
             writer.println(".PHONY: " + taskAll);
 
-            String taskDepend = name + "/depend";
-            writer.println();
-            writer.println(taskDepend + ":");
-            writer.println("\t@mkdir -p $(dir $(" + varDepend + "))");
-            writer.println("\t$(CXX) -MM $(" + varSources + ") > $(" + varDepend + ")");
-            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(" + varDepend + ")");
-            writer.println(".PHONY: " + taskDepend);
-
             String taskClean = name + "/clean";
             writer.println();
             writer.println(taskClean + ":");
@@ -200,6 +193,14 @@ public class Generator {
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
             writer.println();
             writer.println(".PHONY: " + taskClean);
+
+            String taskDepend = name + "/depend";
+            writer.println();
+            writer.println(taskDepend + ":");
+            writer.println("\t@mkdir -p $(dir $(" + varDepend + "))");
+            writer.println("\t$(CXX) -MM $(" + varSources + ") > $(" + varDepend + ")");
+            writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(" + varDepend + ")");
+            writer.println(".PHONY: " + taskDepend);
 
             String taskInstall = name + "/install";
             writer.println();
@@ -276,6 +277,36 @@ public class Generator {
             writer.println(".PHONY: " + task);
             writer.println();
         }
+    }
+
+    private static void generateHelp(Project project, PrintWriter writer) {
+        String helpTask = "help";
+        writer.println("# --------------------------------------------------------------------------- ");
+        writer.println("# HELP");
+        writer.println("# --------------------------------------------------------------------------- ");
+        writer.println(helpTask + ":");
+        writer.println("\t@echo \"The following are some of the valid targets for this Makefile:\"");
+        writer.println("\t@echo \"... all (the default if no target is provided)\"");
+        writer.println("\t@echo \"... clean\"");
+        writer.println("\t@echo \"... depend\"");
+        writer.println("\t@echo \"... install\"");
+        writer.println("\t@echo \"... uninstall\"");
+        writer.println("\t@echo \"... test\"");
+        for (Script script : project.getScripts()) {
+            writer.println("\t@echo \"... run/" + script.getName() + "\"");
+        }
+        for (Target target : project.getTargets()) {
+            if (target.isExecutable()) {
+                writer.println("\t@echo \"... " + target.getName() + "\"");
+            }
+            if (target.isStaticLibrary()) {
+                writer.println("\t@echo \"... " + target.getName() + ".a\"");
+            }
+            if (target.isSharedLibrary()) {
+                writer.println("\t@echo \"... " + target.getName() + ".so\"");
+            }
+        }
+        writer.println(".PHONY: " + helpTask);
     }
 
     private static void generateChildrenTargets(Project project, PrintWriter writer) {
