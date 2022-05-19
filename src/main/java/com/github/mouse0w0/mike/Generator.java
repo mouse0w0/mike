@@ -16,7 +16,7 @@ public class Generator {
             Path makefile = project.getRoot().resolve(MAKEFILE);
             Files.deleteIfExists(makefile);
             writer = new PrintWriter(Files.newBufferedWriter(makefile, StandardOpenOption.CREATE));
-            writer.println("SHELL=/bin/bash");
+            generateHeader(project, writer);
             generateProjectOptions(project, writer);
             generateProjectTasks(project, writer);
             generateChildren(project, writer);
@@ -31,6 +31,10 @@ public class Generator {
                 writer.close();
             }
         }
+    }
+
+    private static void generateHeader(Project project, PrintWriter writer) {
+        writer.println("SHELL=/bin/bash");
     }
 
     private static void generateProjectOptions(Project project, PrintWriter writer) {
