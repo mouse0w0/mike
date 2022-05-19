@@ -271,8 +271,8 @@ public class Generator {
                 writer.print(" <<< " + test.getInput());
             }
             writer.println("))");
-            writer.println("\t$(eval TEST_RESULT=$(findstring $(TEST_OUTPUT),$(TEST_EXPECT)))");
-            writer.println("\t@echo -e \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(if $(TEST_RESULT),Passed,Failed)\"");
+            writer.println("\t$(eval TEST_RESULT=$(shell if [ \"$(TEST_OUTPUT)\" == \"$(TEST_EXPECT)\" ]; then echo Passed; else echo Failed; fi;))");
+            writer.println("\t@echo -e \"$(TEST_CURRENT)/$(TEST_TOTAL)\\tTest  $(TEST_CURRENT)\\t: $(TEST_NAME)\\t................   $(TEST_RESULT)\"");
             writer.println(".PHONY: " + task);
             writer.println();
         }
