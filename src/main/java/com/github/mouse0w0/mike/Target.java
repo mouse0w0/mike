@@ -1,8 +1,5 @@
 package com.github.mouse0w0.mike;
 
-import com.moandjiezana.toml.Toml;
-
-import java.util.Collections;
 import java.util.List;
 
 public class Target {
@@ -14,15 +11,14 @@ public class Target {
     private boolean staticLibrary;
     private boolean sharedLibrary;
 
-    public Target(Toml config) {
-        this.name = config.getString("name");
-        this.sources = config.contains("sources") ? config.getList("sources") : Collections.singletonList(".");
-        this.includes = config.contains("includes") ? config.getList("includes") : Collections.emptyList();
-        this.libraries = config.contains("libraries") ? config.getList("libraries") : Collections.emptyList();
-        this.executable = config.getBoolean("executable", false);
-        this.staticLibrary = config.getBoolean("staticLibrary", false);
-        this.sharedLibrary = config.getBoolean("sharedLibrary", false);
-        if (!(executable || staticLibrary || sharedLibrary)) this.executable = true;
+    public Target(String name, List<String> sources, List<String> includes, List<String> libraries, boolean executable, boolean staticLibrary, boolean sharedLibrary) {
+        this.name = name;
+        this.sources = sources;
+        this.includes = includes;
+        this.libraries = libraries;
+        this.executable = executable;
+        this.staticLibrary = staticLibrary;
+        this.sharedLibrary = sharedLibrary;
     }
 
     public String getName() {

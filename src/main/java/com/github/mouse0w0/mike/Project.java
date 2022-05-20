@@ -8,6 +8,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +107,7 @@ public class Project {
         this.name = config.getString("name", root.getFileName().toString());
         this.children = parseChildren(config.getList("children"));
         this.scripts = parseScripts(config.getTable("scripts"));
-        this.targets = parseTargets(config.getTables("targets"));
+        this.targets = parseTargets(config.getTable("targets"));
         this.tests = parseTests(config.getTable("tests"));
         this.buildDir = config.getString("BUILD_DIR", "./build");
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
@@ -138,11 +139,20 @@ public class Project {
         return scripts;
     }
 
-    private List<Target> parseTargets(List<Toml> config) {
+    private List<Target> parseTargets(Toml config) {
         List<Target> targets = new ArrayList<>();
         if (config != null) {
-            for (Toml c : config) {
-                targets.add(new Target(c));
+            for (Map.Entry<String, Object> entry : config.entrySet()) {
+                String name = entry.getKey();
+                Toml table = config.getTable(name);
+                List<String> sources = table.contains("sources") ? table.getList("sources") : Collections.singletonList(".");
+                List<String> includes = table.contains("includes") ? table.getList("includes") : Collections.emptyList();
+                List<String> libraries = table.contains("libraries") ? table.getList("libraries") : Collections.emptyList();
+                boolean executable = table.getBoolean("executable", false);
+                boolean staticLibrary = table.getBoolean("staticLibrary", false);
+                boolean sharedLibrary = table.getBoolean("sharedLibrary", false);
+                if (!(executable || staticLibrary || sharedLibrary)) executable = true;
+                targets.add(new Target(name, sources, includes, libraries, executable, staticLibrary, sharedLibrary));
             }
         }
         return targets;
