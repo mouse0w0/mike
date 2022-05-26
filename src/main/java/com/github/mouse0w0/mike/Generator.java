@@ -109,6 +109,10 @@ public class Generator {
             String varBuildDir = uppercaseName + "_BUILD_DIR";
             writer.println(varBuildDir + " = $(BUILD_DIR)/" + name);
 
+            String varDepend = uppercaseName + "_DEPEND";
+            writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
+            writer.println("-include $(" + varDepend + ")");
+
             String varSources = uppercaseName + "_SOURCES";
             for (String source : target.getSources()) {
                 if (isCurrentPath(source)) {
@@ -137,7 +141,7 @@ public class Generator {
             writer.println(varObjects + " = $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
 
             String varIncludes = uppercaseName + "_INCLUDES";
-            writer.print(varIncludes + " = ");
+            writer.print(varIncludes + " =");
             for (String include : target.getIncludes()) {
                 writer.print(" " + include);
             }
@@ -146,9 +150,11 @@ public class Generator {
             String varIncludeFlags = uppercaseName + "_INCLUDE_FLAGS";
             writer.println(varIncludeFlags + " = $(addprefix -I,$(" + varIncludes + "))");
 
-            String varDepend = uppercaseName + "_DEPEND";
-            writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
-            writer.println("-include $(" + varDepend + ")");
+            String varLibraries = uppercaseName + "_LIBS";
+            writer.println(varLibraries + " =");
+            for (String library : target.getLibraries()) {
+                writer.println(" " + library);
+            }
 
             String varExecutable = uppercaseName + "_EXECUTABLE";
             String varStaticLibrary = uppercaseName + "_STATIC_LIB";
@@ -162,7 +168,7 @@ public class Generator {
                 writer.println();
                 writer.println(varExecutable + " = " + name);
                 writer.println(taskGenExecutable + ": $(" + varObjects + ")");
-                writer.println("\t$(LD) $(LDFLAGS) -o $@ $(" + varObjects + ")");
+                writer.println("\t$(LD) $(LDFLAGS) -o $@ $(" + varObjects + ") $(" + varLibraries + ")");
             }
 
             if (target.isStaticLibrary()) {
