@@ -37,17 +37,18 @@ public class Generator {
     }
 
     private static void generateProjectOptions(Project project, PrintWriter writer) {
+        Options options = project.getOptions();
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# OPTIONS");
         writer.println("# --------------------------------------------------------------------------- ");
-        writer.println("BUILD_DIR = " + project.getBuildDir());
-        writer.println("INSTALL_DIR = " + project.getInstallDir());
-        writer.println("CXX = " + project.getCxx());
-        writer.println("CXXFLAGS = " + project.getCxxflags());
-        writer.println("LD = " + project.getLd());
-        writer.println("LDFLAGS = " + project.getLdflags());
-        writer.println("AR = " + project.getAr());
-        writer.println("ARFLAGS = " + project.getArflags());
+        writer.println("BUILD_DIR = " + options.getBuildDir());
+        writer.println("INSTALL_DIR = " + options.getInstallDir());
+        writer.println("CXX = " + options.getCxx());
+        writer.println("CXXFLAGS = " + options.getCxxflags());
+        writer.println("LD = " + options.getLd());
+        writer.println("LDFLAGS = " + options.getLdflags());
+        writer.println("AR = " + options.getAr());
+        writer.println("ARFLAGS = " + options.getArflags());
         writer.println();
     }
 
