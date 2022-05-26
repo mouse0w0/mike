@@ -19,7 +19,6 @@ public class Project {
     private final Path root;
 
     private String name;
-    private List<Project> children;
     private List<Script> scripts;
     private List<Target> targets;
     private List<Test> tests;
@@ -45,10 +44,6 @@ public class Project {
 
     public String getName() {
         return name;
-    }
-
-    public List<Project> getChildren() {
-        return children;
     }
 
     public List<Target> getTargets() {
@@ -105,7 +100,6 @@ public class Project {
 
     private void parseProject(Toml config) {
         this.name = config.getString("name", root.getFileName().toString());
-        this.children = parseChildren(config.getList("children"));
         this.scripts = parseScripts(config.getTable("scripts"));
         this.targets = parseTargets(config.getTable("targets"));
         this.tests = parseTests(config.getTable("tests"));
@@ -117,16 +111,6 @@ public class Project {
         this.ldflags = config.getString("LDFLAGS", "");
         this.ar = config.getString("AR", "ar");
         this.arflags = config.getString("ARFLAGS", "rc");
-    }
-
-    private List<Project> parseChildren(List<String> config) {
-        List<Project> children = new ArrayList<>();
-        if (config != null) {
-            for (String c : config) {
-                children.add(new Project(root.resolve(c)));
-            }
-        }
-        return children;
     }
 
     private List<Script> parseScripts(Toml config) {

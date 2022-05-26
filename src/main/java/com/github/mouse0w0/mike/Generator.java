@@ -19,7 +19,6 @@ public class Generator {
             generateHeader(project, writer);
             generateProjectOptions(project, writer);
             generateProjectTasks(project, writer);
-            generateChildren(project, writer);
             generateScripts(project, writer);
             generateTargets(project, writer);
             generateTests(project, writer);
@@ -72,12 +71,6 @@ public class Generator {
         writer.println();
         writer.println(".PHONY: " + task);
         writer.println();
-    }
-
-    private static void generateChildren(Project project, PrintWriter writer) {
-        for (Project child : project.getChildren()) {
-            generate(child);
-        }
     }
 
     private static void generateScripts(Project project, PrintWriter writer) {
