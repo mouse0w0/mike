@@ -34,6 +34,7 @@ public class Generator {
 
     private static void generateHeader(Project project, PrintWriter writer) {
         writer.println("SHELL=/bin/bash");
+        writer.println();
     }
 
     private static void generateProjectOptions(Project project, PrintWriter writer) {
@@ -62,6 +63,7 @@ public class Generator {
         generateProjectTask(project, writer, "depend");
         generateProjectTask(project, writer, "install");
         generateProjectTask(project, writer, "uninstall");
+        generateProjectTask(project, writer, "package");
     }
 
     private static void generateProjectTask(Project project, PrintWriter writer, String task) {
@@ -95,19 +97,22 @@ public class Generator {
         Path root = project.getRoot();
         for (Target target : project.getTargets()) {
             String name = target.getName();
-            String uppercaseName = name.toUpperCase();
+            String _NAME = name.toUpperCase();
             writer.println("# --------------------------------------------------------------------------- ");
-            writer.println("# TARGET " + uppercaseName);
+            writer.println("# TARGET " + _NAME);
             writer.println("# --------------------------------------------------------------------------- ");
 
-            String varBuildDir = uppercaseName + "_BUILD_DIR";
+            String varBuildDir = _NAME + "_BUILD_DIR";
             writer.println(varBuildDir + " = $(BUILD_DIR)/" + name);
 
-            String varDepend = uppercaseName + "_DEPEND";
+            String varPackageDir = _NAME + "_PACKAGE_DIR";
+            writer.println(varPackageDir + "= $(" + varBuildDir + ")/_pack/" + name);
+
+            String varDepend = _NAME + "_DEPEND";
             writer.println(varDepend + " = $(" + varBuildDir + ")/" + name + ".d");
             writer.println("-include $(" + varDepend + ")");
 
-            String varSources = uppercaseName + "_SOURCES";
+            String varSources = _NAME + "_SOURCES";
             for (String source : target.getSources()) {
                 if (isCurrentPath(source)) {
                     writer.println(varSources + " += $(wildcard *.c) $(wildcard *.cc) $(wildcard *.cpp)");
@@ -119,7 +124,7 @@ public class Generator {
                 }
             }
 
-            String varHeaders = uppercaseName + "_HEADERS";
+            String varHeaders = _NAME + "_HEADERS";
             for (String source : target.getSources()) {
                 if (isCurrentPath(source)) {
                     writer.println(varHeaders + " += $(wildcard *.h) $(wildcard *.hpp)");
@@ -131,28 +136,28 @@ public class Generator {
                 }
             }
 
-            String varObjects = uppercaseName + "_OBJECTS";
+            String varObjects = _NAME + "_OBJECTS";
             writer.println(varObjects + " = $(patsubst %, $(" + varBuildDir + ")/%.o, $(" + varSources + "))");
 
-            String varIncludes = uppercaseName + "_INCLUDES";
+            String varIncludes = _NAME + "_INCLUDES";
             writer.print(varIncludes + " =");
             for (String include : target.getIncludes()) {
                 writer.print(" " + include);
             }
             writer.println();
 
-            String varIncludeFlags = uppercaseName + "_INCLUDE_FLAGS";
+            String varIncludeFlags = _NAME + "_INCLUDE_FLAGS";
             writer.println(varIncludeFlags + " = $(addprefix -I,$(" + varIncludes + "))");
 
-            String varLibraries = uppercaseName + "_LIBS";
+            String varLibraries = _NAME + "_LIBS";
             writer.println(varLibraries + " =");
             for (String library : target.getLibraries()) {
                 writer.println(" " + library);
             }
 
-            String varExecutable = uppercaseName + "_EXECUTABLE";
-            String varStaticLibrary = uppercaseName + "_STATIC_LIB";
-            String varSharedLibrary = uppercaseName + "_SHARED_LIB";
+            String varExecutable = _NAME + "_EXECUTABLE";
+            String varStaticLibrary = _NAME + "_STATIC_LIB";
+            String varSharedLibrary = _NAME + "_SHARED_LIB";
 
             String taskGenExecutable = name;
             String taskGenStaticLibrary = name + ".a";
@@ -231,6 +236,26 @@ public class Generator {
             writer.println("\t@echo Uninstalled project");
             writer.println(".PHONY: " + taskUninstall);
 
+            String taskPackage = name + "/package";
+            writer.println();
+            writer.println(taskPackage + ": " + taskAll);
+            writer.println("\t@echo Packaging project $(shell pwd)");
+            writer.println("\t@mkdir -p $(" + varPackageDir + ")/include/");
+            writer.println("\t@if [ -n \"$(" + varHeaders + ")\" ]; then cp $(" + varHeaders + ") $(" + varPackageDir + ")/include/; fi;");
+            if (target.isExecutable()) {
+                writer.println("\t@mkdir -p $(" + varPackageDir + ")/bin/");
+                writer.println("\t@cp $(" + varExecutable + ") $(" + varPackageDir + ")/bin/");
+            }
+            if (target.isStaticLibrary() || target.isSharedLibrary())
+                writer.println("\t@mkdir -p $(" + varPackageDir + ")/lib/");
+            if (target.isStaticLibrary())
+                writer.println("\t@cp $(" + varStaticLibrary + ") $(" + varPackageDir + ")/lib/");
+            if (target.isSharedLibrary())
+                writer.println("\t@cp $(" + varSharedLibrary + ") $(" + varPackageDir + ")/lib/");
+            writer.println("\t@tar zcf " + name + ".tar.gz -C $(" + varPackageDir + ")/../ " + name);
+            writer.println("\t@echo Packaged project");
+            writer.println(".PHONY: " + taskPackage);
+
             writer.println();
             writer.println("$(" + varBuildDir + ")/%.o: %");
             writer.println("\t@mkdir -p $(dir $@)");
@@ -301,6 +326,7 @@ public class Generator {
         writer.println("\t@echo \"... depend\"");
         writer.println("\t@echo \"... install\"");
         writer.println("\t@echo \"... uninstall\"");
+        writer.println("\t@echo \"... package\"");
         writer.println("\t@echo \"... test\"");
         for (Script script : project.getScripts()) {
             writer.println("\t@echo \"... run/" + script.getName() + "\"");
@@ -317,10 +343,6 @@ public class Generator {
             }
         }
         writer.println(".PHONY: " + helpTask);
-    }
-
-    private static void generateChildrenTargets(Project project, PrintWriter writer) {
-
     }
 
     private static boolean isEmpty(String s) {
