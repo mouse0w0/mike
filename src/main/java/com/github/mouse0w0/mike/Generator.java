@@ -192,7 +192,7 @@ public class Generator {
             writer.println();
             writer.println(taskClean + ":");
             writer.println("\t@echo Cleaning project $(shell pwd)");
-            writer.print("\t@rm -f $(" + varObjects + ") $(" + varDepend + ")");
+            writer.print("\t@rm -f $(" + varBuildDir + ")");
             if (target.isExecutable()) writer.print(" $(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.print(" $(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
