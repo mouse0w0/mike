@@ -191,11 +191,13 @@ public class Generator {
             String taskClean = name + "/clean";
             writer.println();
             writer.println(taskClean + ":");
-            writer.print("\trm -f $(" + varObjects + ") $(" + varDepend + ")");
+            writer.println("\t@echo Cleaning project $(shell pwd)");
+            writer.print("\t@rm -f $(" + varObjects + ") $(" + varDepend + ")");
             if (target.isExecutable()) writer.print(" $(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.print(" $(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.print(" $(" + varSharedLibrary + ")");
             writer.println();
+            writer.println("\t@echo Cleaned project");
             writer.println(".PHONY: " + taskClean);
 
             String taskDepend = name + "/depend";
@@ -209,20 +211,24 @@ public class Generator {
             String taskInstall = name + "/install";
             writer.println();
             writer.println(taskInstall + ": " + taskAll);
-            writer.println("\tcp $(" + varHeaders + ") $(INSTALL_DIR)/include");
-            if (target.isExecutable()) writer.println("\tcp $(" + varExecutable + ") $(INSTALL_DIR)/bin");
-            if (target.isStaticLibrary()) writer.println("\tcp $(" + varStaticLibrary + ") $(INSTALL_DIR)/lib");
-            if (target.isSharedLibrary()) writer.println("\tcp $(" + varSharedLibrary + ") $(INSTALL_DIR)/lib");
+            writer.println("\t@echo Installing project $(shell pwd)");
+            writer.println("\t@if [ -n \"$(" + varHeaders + ")\" ]; then cp $(" + varHeaders + ") $(INSTALL_DIR)/include/; fi;");
+            if (target.isExecutable()) writer.println("\t@cp $(" + varExecutable + ") $(INSTALL_DIR)/bin/");
+            if (target.isStaticLibrary()) writer.println("\t@cp $(" + varStaticLibrary + ") $(INSTALL_DIR)/lib/");
+            if (target.isSharedLibrary()) writer.println("\t@cp $(" + varSharedLibrary + ") $(INSTALL_DIR)/lib/");
+            writer.println("\t@echo Installed project");
             writer.println(".PHONY: " + taskInstall);
 
             String taskUninstall = name + "/uninstall";
             writer.println();
             writer.println(taskUninstall + ":");
-            writer.print("\trm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
+            writer.println("\t@echo Uninstalling project $(shell pwd)");
+            writer.print("\t@rm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
             if (target.isExecutable()) writer.print(" $(INSTALL_DIR)/bin/$(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varSharedLibrary + ")");
             writer.println();
+            writer.println("\t@echo Uninstalled project");
             writer.println(".PHONY: " + taskUninstall);
 
             writer.println();
