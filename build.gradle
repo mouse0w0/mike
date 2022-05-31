@@ -1,9 +1,17 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'com.github.mouse0w0'
 version '1.0.0'
+
+sourceCompatibility = targetCompatibility = 1.8
+
+
+application {
+    mainClass = 'com.github.mouse0w0.mike.Mike'
+}
 
 repositories {
     mavenCentral()
@@ -20,3 +28,5 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+compileJava.options.encoding = 'UTF-8'
