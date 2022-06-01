@@ -13,7 +13,7 @@ public class Options {
     private String arflags;
 
     public Options(Toml config) {
-        this.buildDir = config.getString("BUILD_DIR", "./build");
+        this.buildDir = config.getString("BUILD_DIR", "build");
         this.installDir = config.getString("INSTALL_DIR", "/usr/local");
         this.cxx = config.getString("CXX", "g++");
         this.cxxflags = config.getString("CXXFLAGS", "-Wall");
