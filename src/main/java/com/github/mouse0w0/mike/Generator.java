@@ -196,49 +196,51 @@ public class Generator {
             String taskClean = name + "/clean";
             writer.println();
             writer.println(taskClean + ":");
-            writer.println("\t@echo Cleaning project $(shell pwd)");
+            writer.println("\t@echo Cleaning target " + name);
             writer.println("\t@rm -rf $(" + varBuildDir + ")");
             if (target.isExecutable()) writer.println("\t@rm -f $(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.println("\t@rm -f $(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.println("\t@rm -f $(" + varSharedLibrary + ")");
-            writer.println("\t@echo Cleaned project");
+            writer.println("\t@echo Cleaned target");
             writer.println(".PHONY: " + taskClean);
 
             String taskDepend = name + "/depend";
             writer.println();
             writer.println(taskDepend + ":");
+            writer.println("\t@echo Analyzing target " + name);
             writer.println("\t@mkdir -p $(dir $(" + varDepend + "))");
-            writer.println("\t$(CXX) -MM $(" + varSources + ") > $(" + varDepend + ")");
+            writer.println("\t@$(CXX) -MM $(" + varSources + ") > $(" + varDepend + ")");
             writer.println("\t@sed -i -E \"s|^(.+?).o: ([^ ]+?)|$(" + varBuildDir + ")/\\2.o: \\2|g\" $(" + varDepend + ")");
+            writer.println("\t@echo Analyzed target");
             writer.println(".PHONY: " + taskDepend);
 
             String taskInstall = name + "/install";
             writer.println();
             writer.println(taskInstall + ": " + taskAll);
-            writer.println("\t@echo Installing project $(shell pwd)");
+            writer.println("\t@echo Installing target " + name);
             writer.println("\t@if [ -n \"$(" + varHeaders + ")\" ]; then cp $(" + varHeaders + ") $(INSTALL_DIR)/include/; fi;");
             if (target.isExecutable()) writer.println("\t@cp $(" + varExecutable + ") $(INSTALL_DIR)/bin/");
             if (target.isStaticLibrary()) writer.println("\t@cp $(" + varStaticLibrary + ") $(INSTALL_DIR)/lib/");
             if (target.isSharedLibrary()) writer.println("\t@cp $(" + varSharedLibrary + ") $(INSTALL_DIR)/lib/");
-            writer.println("\t@echo Installed project");
+            writer.println("\t@echo Installed target");
             writer.println(".PHONY: " + taskInstall);
 
             String taskUninstall = name + "/uninstall";
             writer.println();
             writer.println(taskUninstall + ":");
-            writer.println("\t@echo Uninstalling project $(shell pwd)");
+            writer.println("\t@echo Uninstalling target " + name);
             writer.print("\t@rm -f $(addprefix $(INSTALL_DIR)/include/,$(notdir $(" + varHeaders + ")))");
             if (target.isExecutable()) writer.print(" $(INSTALL_DIR)/bin/$(" + varExecutable + ")");
             if (target.isStaticLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varStaticLibrary + ")");
             if (target.isSharedLibrary()) writer.print(" $(INSTALL_DIR)/lib/$(" + varSharedLibrary + ")");
             writer.println();
-            writer.println("\t@echo Uninstalled project");
+            writer.println("\t@echo Uninstalled target");
             writer.println(".PHONY: " + taskUninstall);
 
             String taskPackage = name + "/package";
             writer.println();
             writer.println(taskPackage + ": " + taskAll);
-            writer.println("\t@echo Packaging project $(shell pwd)");
+            writer.println("\t@echo Packaging target " + name);
             writer.println("\t@mkdir -p $(" + varPackageDir + ")/include/");
             writer.println("\t@if [ -n \"$(" + varHeaders + ")\" ]; then cp $(" + varHeaders + ") $(" + varPackageDir + ")/include/; fi;");
             if (target.isExecutable()) {
@@ -252,7 +254,7 @@ public class Generator {
             if (target.isSharedLibrary())
                 writer.println("\t@cp $(" + varSharedLibrary + ") $(" + varPackageDir + ")/lib/");
             writer.println("\t@tar zcf " + name + ".tar.gz -C $(" + varPackageDir + ")/../ " + name);
-            writer.println("\t@echo Packaged project");
+            writer.println("\t@echo Packaged target");
             writer.println(".PHONY: " + taskPackage);
 
             writer.println();
