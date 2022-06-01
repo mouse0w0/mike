@@ -21,7 +21,7 @@ public class Mike {
             System.out.println("No found " + mikefile + ", stop generating");
             return;
         }
-        Generator.generate(new Project(dir));
+        Generator.generate(Project.parseProject(dir));
         System.out.println("Generating Makefile successfully");
     }
 }

@@ -16,17 +16,11 @@ public class Project {
 
     public static final String MIKEFILE = "mike.toml";
 
-    private final Path root;
-
+    private Path root;
     private Options options;
     private List<Script> scripts;
     private List<Target> targets;
     private List<Test> tests;
-
-    public Project(Path root) {
-        this.root = root;
-        parseProject(readConfig(root.resolve(MIKEFILE)));
-    }
 
     public Path getRoot() {
         return root;
@@ -48,7 +42,18 @@ public class Project {
         return tests;
     }
 
-    private Toml readConfig(Path file) {
+    public static Project parseProject(Path root) {
+        Project project = new Project();
+        Toml config = readConfig(root.resolve(MIKEFILE));
+        project.root = root;
+        project.options = new Options(config);
+        project.scripts = parseScripts(config.getTable("scripts"));
+        project.targets = parseTargets(config.getTable("targets"));
+        project.tests = parseTests(config.getTable("tests"));
+        return project;
+    }
+
+    private static Toml readConfig(Path file) {
         try (BufferedReader reader = Files.newBufferedReader(file)) {
             return new Toml().read(reader);
         } catch (IOException e) {
@@ -56,14 +61,7 @@ public class Project {
         }
     }
 
-    private void parseProject(Toml config) {
-        this.options = new Options(config);
-        this.scripts = parseScripts(config.getTable("scripts"));
-        this.targets = parseTargets(config.getTable("targets"));
-        this.tests = parseTests(config.getTable("tests"));
-    }
-
-    private List<Script> parseScripts(Toml config) {
+    private static List<Script> parseScripts(Toml config) {
         List<Script> scripts = new ArrayList<>();
         if (config != null) {
             for (Map.Entry<String, Object> entry : config.entrySet()) {
@@ -73,7 +71,7 @@ public class Project {
         return scripts;
     }
 
-    private List<Target> parseTargets(Toml config) {
+    private static List<Target> parseTargets(Toml config) {
         List<Target> targets = new ArrayList<>();
         if (config != null) {
             for (Map.Entry<String, Object> entry : config.entrySet()) {
@@ -92,7 +90,7 @@ public class Project {
         return targets;
     }
 
-    private List<Test> parseTests(Toml config) {
+    private static List<Test> parseTests(Toml config) {
         List<Test> tests = new ArrayList<>();
         if (config != null) {
             for (Map.Entry<String, Object> entry : config.entrySet()) {
