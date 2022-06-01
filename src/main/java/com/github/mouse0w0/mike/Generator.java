@@ -150,10 +150,11 @@ public class Generator {
             writer.println(varIncludeFlags + " = $(addprefix -I,$(" + varIncludes + "))");
 
             String varLibraries = _NAME + "_LIBS";
-            writer.println(varLibraries + " =");
+            writer.print(varLibraries + " =");
             for (String library : target.getLibraries()) {
-                writer.println(" " + library);
+                writer.print(" " + library);
             }
+            writer.println();
 
             String varExecutable = _NAME + "_EXECUTABLE";
             String varStaticLibrary = _NAME + "_STATIC_LIB";
