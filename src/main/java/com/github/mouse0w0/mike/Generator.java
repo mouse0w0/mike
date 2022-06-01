@@ -17,8 +17,8 @@ public class Generator {
             Files.deleteIfExists(makefile);
             writer = new PrintWriter(Files.newBufferedWriter(makefile, StandardOpenOption.CREATE));
             generateHeader(project, writer);
-            generateProjectOptions(project, writer);
-            generateProjectTasks(project, writer);
+            generateOptions(project, writer);
+            generateTasks(project, writer);
             generateScripts(project, writer);
             generateTargets(project, writer);
             generateTests(project, writer);
@@ -33,11 +33,11 @@ public class Generator {
     }
 
     private static void generateHeader(Project project, PrintWriter writer) {
-        writer.println("SHELL=/bin/bash");
+        writer.println("SHELL = /bin/bash");
         writer.println();
     }
 
-    private static void generateProjectOptions(Project project, PrintWriter writer) {
+    private static void generateOptions(Project project, PrintWriter writer) {
         Options options = project.getOptions();
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# OPTIONS");
@@ -53,20 +53,20 @@ public class Generator {
         writer.println();
     }
 
-    private static void generateProjectTasks(Project project, PrintWriter writer) {
+    private static void generateTasks(Project project, PrintWriter writer) {
         writer.println("# --------------------------------------------------------------------------- ");
         writer.println("# TASKS");
         writer.println("# --------------------------------------------------------------------------- ");
 
-        generateProjectTask(project, writer, "all");
-        generateProjectTask(project, writer, "clean");
-        generateProjectTask(project, writer, "depend");
-        generateProjectTask(project, writer, "install");
-        generateProjectTask(project, writer, "uninstall");
-        generateProjectTask(project, writer, "package");
+        generateTask(project, writer, "all");
+        generateTask(project, writer, "clean");
+        generateTask(project, writer, "depend");
+        generateTask(project, writer, "install");
+        generateTask(project, writer, "uninstall");
+        generateTask(project, writer, "package");
     }
 
-    private static void generateProjectTask(Project project, PrintWriter writer, String task) {
+    private static void generateTask(Project project, PrintWriter writer, String task) {
         writer.print(task + ":");
         for (Target target : project.getTargets()) {
             writer.print(" " + target.getName() + "/" + task);
@@ -328,7 +328,9 @@ public class Generator {
         writer.println("\t@echo \"... install\"");
         writer.println("\t@echo \"... uninstall\"");
         writer.println("\t@echo \"... package\"");
-        writer.println("\t@echo \"... test\"");
+        if (!project.getTests().isEmpty()) {
+            writer.println("\t@echo \"... test\"");
+        }
         for (Script script : project.getScripts()) {
             writer.println("\t@echo \"... run/" + script.getName() + "\"");
         }
